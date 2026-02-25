@@ -5,6 +5,7 @@ const openai = new OpenAI({
 });
 
 export default async function maya(req, res) {
+
     try {
 
         if (req.method !== "POST") {
@@ -13,22 +14,23 @@ export default async function maya(req, res) {
 
         const { message } = req.body;
 
-        if (!message) {
-            return res.status(400).json({ error: "Message required" });
+        if (!process.env.OPENAI_API_KEY) {
+            return res.status(500).json({ error: "API key missing" });
         }
 
         const response = await openai.responses.create({
             model: "gpt-4.1-mini",
-            instructions: "You are Maya, a friendly conversational AI assistant.",
             input: message,
         });
 
-        res.status(200).json({
+        return res.status(200).json({
             reply: response.output_text
         });
 
     } catch (error) {
         console.error("Maya Error:", error);
-        res.status(500).json({ error: "Maya backend error" });
+        return res.status(500).json({
+            error: error.message
+        });
     }
 }
